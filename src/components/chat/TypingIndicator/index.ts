@@ -1,1 +1,1 @@
-export { default } from "./TypingIndicator";
+export { default } from "../TypingIndicator";
