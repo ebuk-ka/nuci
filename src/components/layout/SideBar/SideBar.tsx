@@ -1,6 +1,7 @@
 import { Plus, X } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { cn } from "@/utils/cn";
+import logo from "@/assets/images/nucilogo1.png";
 
 interface SideBarProps {
   isOpen: boolean;
@@ -32,7 +33,7 @@ const SideBar = ({ isOpen, onClose }: SideBarProps) => {
            <div className="flex items-center gap-3 border-b border-zinc-800 px-6 py-5">
     <div className="flex h-10 w-29 flex-shrink-0 items-center justify-center">
   <img
-    src="/src/assets/images/nucilogo1.png"
+    src={logo}
     alt="Nuci Logo"
     className="w-full scale-125"
   />
