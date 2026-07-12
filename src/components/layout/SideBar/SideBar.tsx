@@ -31,9 +31,9 @@ const SideBar = ({ isOpen, onClose }: SideBarProps) => {
         <div className="flex items-center justify-between border-b border-zinc-800 p-6">
           <div>
            <div className="flex items-center gap-3 border-b border-zinc-800 px-6 py-5">
-    <div className="flex h-10 w-29 flex-shrink-0 items-center justify-center">
+    <div className="flex h-10 w-29 shrink-0 items-center justify-center">
   <img
-    src={logo}
+    src= {logo}
     alt="Nuci Logo"
     className="w-full scale-125"
   />
