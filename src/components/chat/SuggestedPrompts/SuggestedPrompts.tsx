@@ -13,12 +13,12 @@ import {
 } from "lucide-react";
 
 const suggestedPrompts = [
-  { icon: Laptop, text: "Windows & macOS Support" },
-  { icon: Wifi, text: "Network Troubleshooting" },
-  { icon: Mail, text: "Microsoft 365 & Outlook" },
+  { icon: Laptop, text: "OS Support" },
+  { icon: Wifi, text: "Internet Help" },
+  { icon: Mail, text: " M365 & Mail" },
   { icon: Printer, text: "Printer Diagnostics" },
-  { icon: Gauge, text: "Performance Optimization" },
-  { icon: ShieldCheck, text: "Security Recommendations" },
+  { icon: Gauge, text: "Speed Tuning" },
+  { icon: ShieldCheck, text: "Security Tips" },
   { icon: Cloud, text: "Cloud Services" },
   { icon: Wrench, text: "Software Installation" },
 ];
@@ -43,7 +43,7 @@ const SuggestedPrompts = () => {
         I can help with
       </p>
 
-      <div className="h-12 overflow-hidden">
+      <div className="min-h-12 overflow-hidden w-full">
         <AnimatePresence mode="wait">
           <motion.div
             key={current.text}
@@ -51,14 +51,14 @@ const SuggestedPrompts = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -25 }}
             transition={{ duration: 0.35 }}
-            className="flex items-center gap-3"
+            className="flex items-start gap-3"
           >
             <Icon
               size={24}
-              className="text-cyan-400"
+              className="text-cyan-400 mt-1 shrink-0"
             />
 
-            <span className="text-2xl font-semibold text-white">
+            <span className="text-2xl font-semibold text-white whitespace-normal wrap_break-word">
               {current.text}
             </span>
           </motion.div>

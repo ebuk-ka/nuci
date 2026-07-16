@@ -21,7 +21,7 @@ const ChatWindow = () => {
     <section className="flex h-full flex-col">
       <div className="flex flex-1 flex-col items-center justify-center px-6">
 
-        <h1 className="text-center text-5xl font-bold tracking-tight text-white">
+        <h1 className="text-center text-4xl font-bold tracking-tight text-white">
           {user ? `${greeting}, ${firstName}` : "Welcome to Nuci"}
         </h1>
 
