@@ -1,12 +1,19 @@
-import { useCallback, useEffect, useState } from "react";
-import SuggestedPrompts from "../SuggestedPrompts";
-import ChatInput from "../ChatInput";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+
+import ChatInput from "../ChatInput";
+import SuggestedPrompts from "../SuggestedPrompts"; 
+
+import MessageBubble from "../bubbles/MessageBubbles";
+import TypingIndicator from "../Indicators/TypingIndicator";
+import { sendMessage } from "@/services/message";
+
 import {
   createConversation as createConversationApi,
-  getConversations,
   getConversation,
+  getConversations,
 } from "@/services/conversation";
+import type { ConversationSummary } from "@/services/conversation.js";
 
 interface ChatMessage {
   id: string;
@@ -14,13 +21,27 @@ interface ChatMessage {
   role: "USER" | "ASSISTANT";
 }
 
-const ChatWindow = () => {
-  const [conversationId, setConversationId] = useState("");
+interface ChatWindowProps {
+  conversationId: string;
+  setConversationId: (id: string) => void;
+  conversations: ConversationSummary[];
+  setConversations: (conversations: ConversationSummary[]) => void;
+  setIsSidebarOpen: (isOpen: boolean) => void;
+}
+
+const ChatWindow = ({
+  conversationId,
+  setConversationId,
+  setConversations,
+  setIsSidebarOpen
+}: ChatWindowProps) => {
+  const { user } = useAuth();
+  
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
-  const [errorText, setErrorText] = useState<string | null>(null); // Track error messages
-
-  const { user } = useAuth();
+  const [editingMessage, setEditingMessage] = useState<ChatMessage | null>(null);
+  
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   const hour = new Date().getHours();
 
@@ -36,8 +57,10 @@ const ChatWindow = () => {
   const initializeChat = useCallback(async () => {
     try {
       const data = await getConversations();
-
-      if (data.success && data.conversations?.length > 0) {
+      if (data.success) {
+        setConversations(data.conversations);
+      }
+      if (data.success && data.conversations.length > 0) {
         const latestConversation = data.conversations[0];
         setConversationId(latestConversation.id);
 
@@ -49,81 +72,85 @@ const ChatWindow = () => {
       }
 
       const created = await createConversationApi();
-      if (created.success && created.conversation?.id) {
+      if (created.success && created.conversation) {
         setConversationId(created.conversation.id);
       }
     } catch (error) {
       console.error(error);
     }
-  }, []);
+  }, [setConversationId, setConversations]);
 
   useEffect(() => {
-    let isMounted = true;
-    
-    const timeoutId = window.setTimeout(() => {
-      if (isMounted) void initializeChat();
-    }, 0);
-
-    return () => {
-      isMounted = false;
-      window.clearTimeout(timeoutId);
-    };
+    (async () => {
+      await initializeChat();
+    })();
   }, [initializeChat]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages, loading]);
+
+  const copyMessage = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const editMessage = (message: ChatMessage) => {
+    setEditingMessage(message);
+  };
 
   const handleSend = async (content: string) => {
     if (!conversationId) return;
 
-    setErrorText(null); // Clear any old errors
-    const token = localStorage.getItem("token");
-
-    const userMessage: ChatMessage = {
+    const optimisticMessage: ChatMessage = {
       id: crypto.randomUUID(),
       content,
       role: "USER",
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => [...prev, optimisticMessage]);
     setLoading(true);
 
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/messages",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            conversationId,
-            content,
-          }),
-        }
-      );
-
-      const data = await response.json();
+      const data = await sendMessage(conversationId, content);
 
       if (!data.success) {
-        throw new Error(data.message || "Failed to send message.");
+        throw new Error(data.message);
       }
 
-      setMessages((prev) => [...prev, data.assistantMessage]);
-    } catch (error: unknown) {
-  console.error(error);
+      setMessages((prev) => [
+        ...prev,
+        data.assistantMessage,
+      ]);
 
-  const message =
-    error instanceof Error
-      ? error.message
-      : "Something went wrong. Please try again.";
-
-  setErrorText(message);
-} finally {
-  setLoading(false);
-}
+      const chatList = await getConversations();
+      if (chatList.success) {
+        setConversations(chatList.conversations);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <section className="flex h-full flex-col">
+    <section className="flex flex-1 flex-col h-full overflow-hidden bg-zinc-950 text-white">
+      {/* Mobile Toggle Bar */}
+      <div className="flex items-center px-6 py-4 border-b border-zinc-900 lg:hidden">
+        <button 
+          onClick={() => setIsSidebarOpen(true)}
+          className="text-zinc-400 hover:text-white text-sm font-medium"
+        >
+          Menu
+        </button>
+      </div>
+
       <div className="flex-1 overflow-y-auto px-6 py-8">
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center">
@@ -131,7 +158,7 @@ const ChatWindow = () => {
               {user ? `${greeting}, ${firstName}` : "Welcome to Nuci"}
             </h1>
 
-            <p className="mt-5 mb-12 max-w-2xl text-center text-lg leading-8 text-zinc-400">
+            <p className="mb-12 mt-5 max-w-2xl text-center text-lg leading-8 text-zinc-400">
               How may I help you today?
             </p>
 
@@ -140,45 +167,25 @@ const ChatWindow = () => {
         ) : (
           <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
             {messages.map((message) => (
-              <div
+              <MessageBubble
                 key={message.id}
-                className={`max-w-[80%] rounded-3xl px-5 py-4 shadow-sm ${
-                  message.role === "USER"
-                    ? "ml-auto bg-cyan-600 text-white"
-                    : "mr-auto border border-zinc-800 bg-zinc-900 text-white"
-                }`}
-              >
-                {/* Note: Replace this text container with a markdown library like react-markdown later */}
-                <span className="whitespace-pre-wrap">{message.content}</span>
-              </div>
+                message={message}
+                onCopy={copyMessage}
+                onEdit={editMessage}
+              />
             ))}
 
-            {loading && (
-              <div className="mr-auto rounded-3xl border border-zinc-800 bg-zinc-900 px-5 py-4">
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-zinc-400"></span>
-                  <span
-                    className="h-2 w-2 animate-bounce rounded-full bg-zinc-400"
-                    style={{ animationDelay: "0.15s" }}
-                  ></span>
-                  <span
-                    className="h-2 w-2 animate-bounce rounded-full bg-zinc-400"
-                    style={{ animationDelay: "0.3s" }}
-                  ></span>
-                </div>
-              </div>
-            )}
-
-            {errorText && (
-              <div className="mx-auto rounded-xl bg-red-950/50 border border-red-900 px-4 py-2 text-sm text-red-400">
-                {errorText}
-              </div>
-            )}
+            {loading && <TypingIndicator />}
+            <div ref={bottomRef} />
           </div>
         )}
       </div>
 
-      <ChatInput onSend={handleSend} />
+      <ChatInput
+        onSend={(content) => void handleSend(content)}
+        editingMessage={editingMessage}
+        clearEditing={() => setEditingMessage(null)}
+      />
     </section>
   );
 };

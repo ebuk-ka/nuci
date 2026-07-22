@@ -10,14 +10,14 @@ export interface ConversationMessage {
 
 export interface ConversationSummary {
   id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateConversationResponse {
   success: boolean;
-  conversation?: {
-    id: string;
-    messages?: ConversationMessage[];
-  };
+  conversation?: ConversationSummary;
   message?: string;
 }
 
@@ -31,6 +31,9 @@ export interface ConversationDetailsResponse {
   success: boolean;
   conversation: {
     id: string;
+    title: string;
+    createdAt: string;
+    updatedAt: string;
     messages: ConversationMessage[];
   };
   message?: string;
@@ -44,7 +47,7 @@ export const createConversation = async (): Promise<CreateConversationResponse> 
     },
   });
 
-  return response.json() as Promise<CreateConversationResponse>;
+  return response.json();
 };
 
 export const getConversations = async (): Promise<ConversationsResponse> => {
@@ -54,7 +57,7 @@ export const getConversations = async (): Promise<ConversationsResponse> => {
     },
   });
 
-  return response.json() as Promise<ConversationsResponse>;
+  return response.json();
 };
 
 export const getConversation = async (
@@ -66,5 +69,5 @@ export const getConversation = async (
     },
   });
 
-  return response.json() as Promise<ConversationDetailsResponse>;
+  return response.json();
 };
