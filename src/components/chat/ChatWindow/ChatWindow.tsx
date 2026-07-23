@@ -33,7 +33,6 @@ const ChatWindow = ({
   conversationId,
   setConversationId,
   setConversations,
-  setIsSidebarOpen
 }: ChatWindowProps) => {
   const { user } = useAuth();
   
@@ -143,12 +142,6 @@ const ChatWindow = ({
     <section className="flex flex-1 flex-col h-full overflow-hidden bg-zinc-950 text-white">
       {/* Mobile Toggle Bar */}
       <div className="flex items-center px-6 py-4 border-b border-zinc-900 lg:hidden">
-        <button 
-          onClick={() => setIsSidebarOpen(true)}
-          className="text-zinc-400 hover:text-white text-sm font-medium"
-        >
-          Menu
-        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-6 py-8">
