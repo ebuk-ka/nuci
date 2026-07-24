@@ -8,6 +8,14 @@ import {
   getConversations,
 } from "@/services/conversation";
 
+interface MainLayoutChildProps {
+  conversationId: string;
+  setConversationId: (id: string) => void;
+  conversations: ConversationSummary[];
+  setConversations: (conversations: ConversationSummary[]) => void;
+  setIsSidebarOpen: (isOpen: boolean) => void;
+}
+
 interface MainLayoutProps {
   children: React.ReactNode;
 }
@@ -68,7 +76,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         {/* Main scrolling chat container */}
         <main className="flex-1 overflow-y-auto px-6 py-8">
           {React.isValidElement(children)
-            ? React.cloneElement(children as React.ReactElement<any>, {
+            ? React.cloneElement(children as React.ReactElement<MainLayoutChildProps>, {
                 conversationId,
                 setConversationId,
                 conversations,

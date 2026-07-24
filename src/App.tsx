@@ -5,6 +5,7 @@ import ChatWindow from "@/components/chat/ChatWindow";
 
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+// import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           </MainLayout>
         }
       />
+
 
       <Route path="/login" element={<Login />} />
 
