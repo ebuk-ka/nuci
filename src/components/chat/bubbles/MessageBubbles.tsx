@@ -38,7 +38,7 @@ const MessageBubble = ({
       </div>
 
       <div
-        className={`mt-2 transition-all duration-200 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 ${
+        className={`mt-2 opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0 ${
           isUser ? "mr-2 self-end" : "ml-2 self-start"
         }`}
       >
